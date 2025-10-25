@@ -40,7 +40,10 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public UserDto updateUser(@RequestBody @Valid UpdateUserDto updateUserDto, @PathVariable long userId) {
+    public UserDto updateUser(
+            @RequestBody @Valid UpdateUserDto updateUserDto,
+            @PathVariable long userId
+    ) {
         updateUserDto.setId(userId);
         log.trace("update user requested with id: {} and body {}", userId, updateUserDto);
         return userService.update(updateUserDto);
