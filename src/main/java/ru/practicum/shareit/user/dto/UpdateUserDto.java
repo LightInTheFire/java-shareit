@@ -17,7 +17,7 @@ public class UpdateUserDto {
     String email;
 
     public boolean hasName() {
-        return name != null && !name.isEmpty();
+        return name != null && !name.isBlank();
     }
 
     public boolean hasEmail() {
