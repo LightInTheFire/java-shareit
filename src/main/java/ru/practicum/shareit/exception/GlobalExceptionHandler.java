@@ -26,9 +26,9 @@ class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ValidationErrorResponse onConstraintValidationException(
-            ConstraintViolationException e
+            ConstraintViolationException ex
     ) {
-        final List<Violation> violations = e.getConstraintViolations().stream()
+        final List<Violation> violations = ex.getConstraintViolations().stream()
                 .map(
                         violation -> new Violation(
                                 violation.getPropertyPath().toString(),
@@ -43,9 +43,9 @@ class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ValidationErrorResponse onMethodArgumentNotValidException(
-            MethodArgumentNotValidException e
+            MethodArgumentNotValidException ex
     ) {
-        final List<Violation> violations = e.getBindingResult().getFieldErrors().stream()
+        final List<Violation> violations = ex.getBindingResult().getFieldErrors().stream()
                 .map(error -> new Violation(error.getField(), error.getDefaultMessage()))
                 .collect(Collectors.toList());
         log.warn(violations.toString());
@@ -64,5 +64,12 @@ class GlobalExceptionHandler {
     public ErrorResponse onDuplicateDataException(DuplicateDataException ex) {
         log.warn("Duplicate data exception occurred while processing request {}", ex.getMessage());
         return new ErrorResponse("duplicate data", ex.getMessage());
+    }
+
+    @ExceptionHandler(ForbiddenAccessException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse onForbiddenAccessException(ForbiddenAccessException ex) {
+        log.warn("Forbidden access exception occurred while processing request {}", ex.getMessage());
+        return new ErrorResponse("forbidden", ex.getMessage());
     }
 }
