@@ -1,4 +1,4 @@
-package ru.practicum.shareit.exception;
+package ru.practicum.shareit.exception.handler;
 
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -7,6 +7,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.practicum.shareit.exception.DuplicateDataException;
+import ru.practicum.shareit.exception.ForbiddenAccessException;
+import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.dto.ErrorResponse;
+import ru.practicum.shareit.exception.dto.ValidationErrorResponse;
+import ru.practicum.shareit.exception.dto.Violation;
 
 import java.util.List;
 import java.util.stream.Collectors;
