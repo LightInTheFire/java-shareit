@@ -14,6 +14,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.Collection;
+import java.util.Collections;
 
 @Slf4j
 @Service
@@ -65,6 +66,10 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Collection<ItemDto> searchItems(String query) {
+        if (query.isBlank()) {
+            return Collections.emptyList();
+        }
+
         return itemRepository.searchItems(query)
                 .stream()
                 .map(ItemMapper::toItemDto)

@@ -3,7 +3,10 @@ package ru.practicum.shareit.item.repository;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.item.model.Item;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Repository
 public class InMemoryItemRepository implements ItemRepository {
@@ -11,19 +14,7 @@ public class InMemoryItemRepository implements ItemRepository {
 
     @Override
     public Optional<Item> findById(long id) {
-        Item item = items.get(id);
-        if (item == null) {
-            return Optional.empty();
-        }
-
-        return Optional.of(new Item(
-                item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.isAvailable(),
-                item.getOwner(),
-                item.getRequest()
-        ));
+        return Optional.ofNullable(items.get(id));
     }
 
     @Override
@@ -47,10 +38,6 @@ public class InMemoryItemRepository implements ItemRepository {
     @Override
     public Collection<Item> searchItems(String query) {
         String lowercaseQuery = query.trim().toLowerCase();
-
-        if (lowercaseQuery.isEmpty()) {
-            return Collections.emptyList();
-        }
 
         return items.values()
                 .stream()
