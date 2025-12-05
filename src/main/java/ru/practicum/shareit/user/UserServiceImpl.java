@@ -42,14 +42,14 @@ public class UserServiceImpl implements UserService {
     public UserDto update(UpdateUserDto newUser) {
         User user = getUserOrThrow(newUser.getId());
         User updatedUser = UserMapper.updateUser(user, newUser);
-        userRepository.update(updatedUser);
+        userRepository.save(updatedUser);
         return UserMapper.toUserDto(updatedUser);
     }
 
     @Override
     public void delete(long id) {
         getUserOrThrow(id);
-        userRepository.delete(id);
+        userRepository.deleteById(id);
     }
 
     private User getUserOrThrow(long id) {

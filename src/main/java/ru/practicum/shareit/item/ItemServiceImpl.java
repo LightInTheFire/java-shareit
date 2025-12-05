@@ -36,7 +36,7 @@ public class ItemServiceImpl implements ItemService {
     public Collection<ItemDto> getAllItemsOfUser(long userId) {
         getUserOrThrow(userId);
 
-        return itemRepository.findAllByUserId(userId)
+        return itemRepository.findAllByOwnerId(userId)
                 .stream()
                 .map(ItemMapper::toItemDto)
                 .toList();
@@ -53,7 +53,6 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto updateItem(long userId, long itemId, UpdateItemDto newItem) {
-        getUserOrThrow(userId);
         Item item = getItemOrThrow(itemId);
         if (item.getOwner().getId() != userId) {
             throw new ForbiddenAccessException("Only owner of item can update it");
@@ -70,7 +69,8 @@ public class ItemServiceImpl implements ItemService {
             return Collections.emptyList();
         }
 
-        return itemRepository.searchItems(query)
+
+        return itemRepository.search(query)
                 .stream()
                 .map(ItemMapper::toItemDto)
                 .toList();
