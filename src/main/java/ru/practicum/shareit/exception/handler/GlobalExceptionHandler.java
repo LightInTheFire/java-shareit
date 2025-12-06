@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.shareit.exception.DuplicateDataException;
 import ru.practicum.shareit.exception.ForbiddenAccessException;
+import ru.practicum.shareit.exception.ItemUnavailableException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.dto.ErrorResponse;
 import ru.practicum.shareit.exception.dto.ValidationErrorResponse;
@@ -63,6 +64,13 @@ class GlobalExceptionHandler {
     public ErrorResponse onNotFoundException(NotFoundException ex) {
         log.warn("Not found exception occurred while processing request {}", ex.getMessage());
         return new ErrorResponse("not found", ex.getMessage());
+    }
+
+    @ExceptionHandler(ItemUnavailableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse onItemUnavailableException(ItemUnavailableException ex) {
+        log.warn("Item unavailable exception occurred while processing request {}", ex.getMessage());
+        return new ErrorResponse("unavailable", ex.getMessage());
     }
 
     @ExceptionHandler(DuplicateDataException.class)

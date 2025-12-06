@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.ForbiddenAccessException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -18,6 +19,7 @@ import java.util.Collections;
 
 @Slf4j
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
@@ -43,6 +45,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public ItemDto saveItem(long userId, NewItemDto newItem) {
         User owner = getUserOrThrow(userId);
         Item item = ItemMapper.toItem(newItem);
@@ -52,6 +55,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Transactional
     public ItemDto updateItem(long userId, long itemId, UpdateItemDto newItem) {
         Item item = getItemOrThrow(itemId);
         if (item.getOwner().getId() != userId) {
@@ -68,7 +72,6 @@ public class ItemServiceImpl implements ItemService {
         if (query.isBlank()) {
             return Collections.emptyList();
         }
-
 
         return itemRepository.search(query)
                 .stream()
