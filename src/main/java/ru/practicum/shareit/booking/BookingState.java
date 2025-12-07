@@ -11,7 +11,7 @@ public enum BookingState {
     REJECTED;
 
     public static Optional<BookingState> fromString(String state) {
-        return Optional.ofNullable(switch (state.toUpperCase()) {
+        BookingState bookingState = switch (state.toUpperCase()) {
             case "ALL" -> ALL;
             case "CURRENT" -> CURRENT;
             case "PAST" -> PAST;
@@ -19,6 +19,7 @@ public enum BookingState {
             case "WAITING" -> WAITING;
             case "REJECTED" -> REJECTED;
             default -> null;
-        });
+        };
+        return Optional.ofNullable(bookingState);
     }
 }
