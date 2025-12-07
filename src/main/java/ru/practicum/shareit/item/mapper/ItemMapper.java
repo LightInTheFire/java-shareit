@@ -1,4 +1,4 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.mapper;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.booking.BookingMapper;
@@ -8,9 +8,10 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import ru.practicum.shareit.item.dto.NewItemDto;
 import ru.practicum.shareit.item.dto.UpdateItemDto;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @UtilityClass
 public class ItemMapper {
@@ -49,7 +50,7 @@ public class ItemMapper {
     }
 
     public static ItemWithBookingDto toItemWithBookingDatesDto(
-            Item item, Booking nextBooking, Booking lastBooking) {
+            Item item, Booking nextBooking, Booking lastBooking, List<Comment> comments) {
         Long itemId = item.getId();
         String itemName = item.getName();
         String itemDescription = item.getDescription();
@@ -62,7 +63,10 @@ public class ItemMapper {
                 itemDescription,
                 itemAvailable,
                 lastBookingInfoDto,
-                nextBookingInfoDto
+                nextBookingInfoDto,
+                comments == null ? null : comments.stream()
+                        .map(CommentMapper::toDto)
+                        .toList()
         );
     }
 

@@ -3,12 +3,10 @@ package ru.practicum.shareit.item;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemWithBookingDto;
-import ru.practicum.shareit.item.dto.NewItemDto;
-import ru.practicum.shareit.item.dto.UpdateItemDto;
+import ru.practicum.shareit.item.dto.*;
 
 import java.util.Collection;
 
@@ -22,7 +20,7 @@ public class ItemController {
     private final ItemService itemService;
 
     @GetMapping("/{itemId}")
-    public ItemDto getItem(
+    public ItemWithBookingDto getItem(
             @RequestHeader(SHARER_USER_ID_HEADER) long userId,
             @PathVariable long itemId
     ) {
@@ -58,5 +56,15 @@ public class ItemController {
             @RequestParam(name = "text") String query
     ) {
         return itemService.searchItems(query);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommentDto createComment(
+            @RequestHeader(SHARER_USER_ID_HEADER) long authorId,
+            @PathVariable long itemId,
+            @RequestBody @Valid NewCommentDto comment
+    ) {
+        return itemService.createComment(authorId, itemId, comment);
     }
 }

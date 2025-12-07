@@ -7,10 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.shareit.exception.DuplicateDataException;
-import ru.practicum.shareit.exception.ForbiddenAccessException;
-import ru.practicum.shareit.exception.ItemUnavailableException;
-import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.exception.*;
 import ru.practicum.shareit.exception.dto.ErrorResponse;
 import ru.practicum.shareit.exception.dto.ValidationErrorResponse;
 import ru.practicum.shareit.exception.dto.Violation;
@@ -85,5 +82,12 @@ class GlobalExceptionHandler {
     public ErrorResponse onForbiddenAccessException(ForbiddenAccessException ex) {
         log.warn("Forbidden access exception occurred while processing request {}", ex.getMessage());
         return new ErrorResponse("forbidden", ex.getMessage());
+    }
+
+    @ExceptionHandler(ItemCommentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse onItemCommentException(ItemCommentException ex) {
+        log.warn("Item comment exception occurred while processing request {}", ex.getMessage());
+        return new ErrorResponse("cant comment", ex.getMessage());
     }
 }
