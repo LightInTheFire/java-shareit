@@ -1,10 +1,16 @@
 package ru.practicum.shareit.item;
 
 import lombok.experimental.UtilityClass;
+import ru.practicum.shareit.booking.BookingMapper;
+import ru.practicum.shareit.booking.dto.BookingInfoDto;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import ru.practicum.shareit.item.dto.NewItemDto;
 import ru.practicum.shareit.item.dto.UpdateItemDto;
 import ru.practicum.shareit.item.model.Item;
+
+import java.time.LocalDateTime;
 
 @UtilityClass
 public class ItemMapper {
@@ -15,7 +21,6 @@ public class ItemMapper {
                 item.getName(),
                 item.getDescription(),
                 item.isAvailable()
-         //       item.getRequest() != null ? item.getRequest().getId() : null
         );
     }
 
@@ -42,4 +47,23 @@ public class ItemMapper {
 
         return item;
     }
+
+    public static ItemWithBookingDto toItemWithBookingDatesDto(
+            Item item, Booking nextBooking, Booking lastBooking) {
+        Long itemId = item.getId();
+        String itemName = item.getName();
+        String itemDescription = item.getDescription();
+        boolean itemAvailable = item.isAvailable();
+        BookingInfoDto lastBookingInfoDto = BookingMapper.toBookingInfoDto(lastBooking).orElse(null);
+        BookingInfoDto nextBookingInfoDto = BookingMapper.toBookingInfoDto(nextBooking).orElse(null);
+        return new ItemWithBookingDto(
+                itemId,
+                itemName,
+                itemDescription,
+                itemAvailable,
+                lastBookingInfoDto,
+                nextBookingInfoDto
+        );
+    }
+
 }

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import ru.practicum.shareit.item.dto.NewItemDto;
 import ru.practicum.shareit.item.dto.UpdateItemDto;
 
@@ -9,7 +10,7 @@ import java.util.Collection;
 public interface ItemService {
     ItemDto getItemOfUserById(long userId, long itemId);
 
-    Collection<ItemDto> getAllItemsOfUser(long userId);
+    Collection<ItemWithBookingDto> getAllItemsOfUser(long userId);
 
     ItemDto saveItem(long userId, NewItemDto newItem);
 

@@ -4,9 +4,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.ForbiddenAccessException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemWithBookingDto;
 import ru.practicum.shareit.item.dto.NewItemDto;
 import ru.practicum.shareit.item.dto.UpdateItemDto;
 import ru.practicum.shareit.item.model.Item;
@@ -14,8 +17,13 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,6 +32,7 @@ import java.util.Collections;
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
     private final UserRepository userRepository;
+    private final BookingRepository bookingRepository;
 
     @Override
     public ItemDto getItemOfUserById(long userId, long itemId) {
@@ -35,12 +44,38 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Collection<ItemDto> getAllItemsOfUser(long userId) {
+    public Collection<ItemWithBookingDto> getAllItemsOfUser(long userId) {
         getUserOrThrow(userId);
+        List<Item> itemsByOwner = itemRepository.findAllByOwnerId(userId);
+        List<Long> itemsIds = itemsByOwner.stream()
+                .map(Item::getId)
+                .toList();
+
+        LocalDateTime currentTime = LocalDateTime.now();
+
+        List<Booking> lastBookingsOfItems = bookingRepository.findLastApprovedBookingsForItems(
+                itemsIds, currentTime);
+        List<Booking> nextBookingsOfItems = bookingRepository.findNextApprovedBookingsForItems(
+                itemsIds, currentTime);
+
+        Map<Long, Booking> lastBookingsOfItemsById = lastBookingsOfItems.stream()
+                .collect(Collectors.toMap(
+                        booking -> booking.getItem().getId(),
+                        Function.identity()
+                ));
+        Map<Long, Booking> nextBookingsOfItemsById = nextBookingsOfItems.stream()
+                .collect(Collectors.toMap(
+                        booking -> booking.getItem().getId(),
+                        Function.identity()
+                ));
 
         return itemRepository.findAllByOwnerId(userId)
                 .stream()
-                .map(ItemMapper::toItemDto)
+                .map(item -> ItemMapper.toItemWithBookingDatesDto(
+                        item,
+                        lastBookingsOfItemsById.get(item.getId()),
+                        nextBookingsOfItemsById.get(item.getId())
+                ))
                 .toList();
     }
 

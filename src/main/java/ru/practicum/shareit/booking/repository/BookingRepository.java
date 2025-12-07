@@ -9,6 +9,43 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
+
+    @Query("""
+                SELECT b FROM Booking b
+                WHERE b.item.id IN :itemIds
+                  AND b.status = 'APPROVED'
+                  AND b.endTime < :now
+                  AND b.endTime = (
+                      SELECT MAX(b2.endTime)
+                      FROM Booking b2
+                      WHERE b2.item.id = b.item.id
+                        AND b2.status = 'APPROVED'
+                        AND b2.endTime < :now
+                  )
+            """)
+    List<Booking> findLastApprovedBookingsForItems(
+            List<Long> itemIds,
+            LocalDateTime now
+    );
+
+    @Query("""
+                SELECT b FROM Booking b
+                WHERE b.item.id IN :itemIds
+                  AND b.status = 'APPROVED'
+                  AND b.startTime > :now
+                  AND b.startTime = (
+                      SELECT MIN(b2.startTime)
+                      FROM Booking b2
+                      WHERE b2.item.id = b.item.id
+                        AND b2.status = 'APPROVED'
+                        AND b2.startTime > :now
+                  )
+            """)
+    List<Booking> findNextApprovedBookingsForItems(
+            List<Long> itemIds,
+            LocalDateTime now
+    );
+
     //booker methods
     // ALL
     List<Booking> findByBookerIdOrderByStartTimeDesc(Long bookerId);
@@ -76,4 +113,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             Long ownerId,
             BookingStatus status
     );
+
 }
