@@ -85,7 +85,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private Map<Long, List<Comment>> getCommentsOfItems(List<Long> itemsIds) {
-        List<Comment> itemsComments = commentRepository.findAllByItem_IdIn(itemsIds);
+        List<Comment> itemsComments = commentRepository.findAllByItem_IdInOrderByCreatedAtDesc(itemsIds);
         return itemsComments.stream()
                 .collect(Collectors.groupingBy(comment -> comment.getItem().getId()));
     }
