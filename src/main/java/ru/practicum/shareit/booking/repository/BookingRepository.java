@@ -123,4 +123,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             BookingStatus status
     );
 
+    List<Booking> findAllByItem_Id(Long itemId);
 }

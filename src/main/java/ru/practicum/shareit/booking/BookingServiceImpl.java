@@ -8,6 +8,7 @@ import ru.practicum.shareit.booking.dto.BookingResponseDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exception.BookingIntersectionException;
 import ru.practicum.shareit.exception.ForbiddenAccessException;
 import ru.practicum.shareit.exception.ItemUnavailableException;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -38,6 +39,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         checkBookingDates(bookingDto.start(), bookingDto.end());
+        checkBookingIntersections(bookingDto);
 
         Booking booking = BookingMapper.fromDto(bookingDto, booker, item);
         Booking savedBooking = bookingRepository.save(booking);
@@ -128,6 +130,19 @@ public class BookingServiceImpl implements BookingService {
     private Booking getBookingOrThrow(long bookingId) {
         return bookingRepository.findById(bookingId)
                 .orElseThrow(NotFoundException.supplier("Booking with id:%d not found", bookingId));
+    }
+
+    private void checkBookingIntersections(BookingDto bookingDto) {
+        List<Booking> bookingsOfItem = bookingRepository.findAllByItem_Id(bookingDto.itemId());
+        LocalDateTime start = bookingDto.start();
+        LocalDateTime end = bookingDto.end();
+
+        for (Booking booking : bookingsOfItem) {
+            if (start.isBefore(booking.getEndTime()) && end.isAfter(booking.getStartTime())) {
+                throw new BookingIntersectionException("""
+                        You can't book this item because booking dates intersects with another booking""");
+            }
+        }
     }
 
     private void checkBookingDates(LocalDateTime start, LocalDateTime end) {

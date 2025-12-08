@@ -90,4 +90,11 @@ class GlobalExceptionHandler {
         log.warn("Item comment exception occurred while processing request {}", ex.getMessage());
         return new ErrorResponse("cant comment", ex.getMessage());
     }
+
+    @ExceptionHandler(BookingIntersectionException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse onBookingIntersectionException(BookingIntersectionException ex) {
+        log.warn("Booking intersection exception occurred while processing request {}", ex.getMessage());
+        return new ErrorResponse("booking intersection", ex.getMessage());
+    }
 }
