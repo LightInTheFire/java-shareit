@@ -6,47 +6,13 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
-    @Query("""
-                SELECT b FROM Booking b
-                WHERE b.item.id IN :itemIds
-                  AND b.status = 'APPROVED'
-                  AND b.endTime < :now
-                  AND b.endTime = (
-                      SELECT MAX(b2.endTime)
-                      FROM Booking b2
-                      WHERE b2.item.id = b.item.id
-                        AND b2.status = 'APPROVED'
-                        AND b2.endTime < :now
-                  )
-            """)
-    List<Booking> findLastApprovedBookingsForItems(
-            List<Long> itemIds,
-            LocalDateTime now
-    );
-
-    @Query("""
-                SELECT b FROM Booking b
-                WHERE b.item.id IN :itemIds
-                  AND b.status = 'APPROVED'
-                  AND b.startTime > :now
-                  AND b.startTime = (
-                      SELECT MIN(b2.startTime)
-                      FROM Booking b2
-                      WHERE b2.item.id = b.item.id
-                        AND b2.status = 'APPROVED'
-                        AND b2.startTime > :now
-                  )
-            """)
-    List<Booking> findNextApprovedBookingsForItems(
-            List<Long> itemIds,
-            LocalDateTime now
-    );
-
+    List<Booking> findAllByItem_IdInAndStatus(Collection<Long> ids, BookingStatus status);
     //booker methods
 
     Optional<Booking> findByBookerIdAndItemIdAndStatusAndEndTimeIsBefore(

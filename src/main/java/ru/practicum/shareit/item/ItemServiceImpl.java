@@ -22,7 +22,6 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -59,8 +58,10 @@ public class ItemServiceImpl implements ItemService {
                 .toList();
 
         LocalDateTime currentTime = LocalDateTime.now();
-        Map<Long, Booking> lastBookingsOfItemsById = getLastBookingsMap(itemsIds, currentTime);
-        Map<Long, Booking> nextBookingsOfItemsById = getNextBookingMap(itemsIds, currentTime);
+        List<Booking> bookingsOfItems = bookingRepository.findAllByItem_IdInAndStatus(
+                itemsIds, BookingStatus.APPROVED);
+        Map<Long, Booking> lastBookingsOfItemsById = getLastBookingsMap(bookingsOfItems, currentTime);
+        Map<Long, Booking> nextBookingsOfItemsById = getNextBookingsMap(bookingsOfItems, currentTime);
         Map<Long, List<Comment>> commentsByItemId = getCommentsOfItems(itemsIds);
 
         return itemRepository.findAllByOwnerId(userId)
@@ -72,32 +73,6 @@ public class ItemServiceImpl implements ItemService {
                         commentsByItemId.get(item.getId())
                 ))
                 .toList();
-    }
-
-    private Map<Long, Booking> getNextBookingMap(List<Long> itemsIds, LocalDateTime currentTime) {
-        List<Booking> nextBookingsOfItems = bookingRepository.findNextApprovedBookingsForItems(
-                itemsIds, currentTime);
-        return nextBookingsOfItems.stream()
-                .collect(Collectors.toMap(
-                        booking -> booking.getItem().getId(),
-                        Function.identity()
-                ));
-    }
-
-    private Map<Long, List<Comment>> getCommentsOfItems(List<Long> itemsIds) {
-        List<Comment> itemsComments = commentRepository.findAllByItem_IdInOrderByCreatedAtDesc(itemsIds);
-        return itemsComments.stream()
-                .collect(Collectors.groupingBy(comment -> comment.getItem().getId()));
-    }
-
-    private Map<Long, Booking> getLastBookingsMap(List<Long> itemsIds, LocalDateTime currentTime) {
-        List<Booking> lastBookingsOfItems = bookingRepository.findLastApprovedBookingsForItems(
-                itemsIds, currentTime);
-        return lastBookingsOfItems.stream()
-                .collect(Collectors.toMap(
-                        booking -> booking.getItem().getId(),
-                        Function.identity()
-                ));
     }
 
     @Override
@@ -121,7 +96,6 @@ public class ItemServiceImpl implements ItemService {
         itemRepository.save(updatedItem);
         return ItemMapper.toItemDto(updatedItem);
     }
-
 
     @Override
     public Collection<ItemDto> searchItems(String query) {
@@ -150,6 +124,52 @@ public class ItemServiceImpl implements ItemService {
         Comment comment = CommentMapper.toEntity(newComment, author, item, LocalDateTime.now());
         Comment savedComment = commentRepository.save(comment);
         return CommentMapper.toDto(savedComment);
+    }
+
+    private Map<Long, Booking> getNextBookingsMap(List<Booking> bookings, LocalDateTime currentTime) {
+        Map<Long, Booking> bookingsByItemId = new HashMap<>();
+
+        for (Booking booking : bookings) {
+            if (!booking.getStartTime().isAfter(currentTime)) {
+                continue;
+            }
+
+            Long itemId = booking.getItem().getId();
+            Booking existing = bookingsByItemId.get(itemId);
+
+            if (existing == null
+                    || booking.getStartTime().isBefore(existing.getStartTime())) {
+                bookingsByItemId.put(itemId, booking);
+            }
+        }
+
+        return bookingsByItemId;
+    }
+
+    private Map<Long, List<Comment>> getCommentsOfItems(List<Long> itemsIds) {
+        List<Comment> itemsComments = commentRepository.findAllByItem_IdInOrderByCreatedAtDesc(itemsIds);
+        return itemsComments.stream()
+                .collect(Collectors.groupingBy(comment -> comment.getItem().getId()));
+    }
+
+    private Map<Long, Booking> getLastBookingsMap(List<Booking> bookings, LocalDateTime currentTime) {
+        Map<Long, Booking> bookingsByItemId = new HashMap<>();
+
+        for (Booking booking : bookings) {
+            if (!booking.getEndTime().isAfter(currentTime)) {
+                continue;
+            }
+
+            Long itemId = booking.getItem().getId();
+            Booking existing = bookingsByItemId.get(itemId);
+
+            if (existing == null
+                    || booking.getEndTime().isAfter(existing.getEndTime())) {
+                bookingsByItemId.put(itemId, booking);
+            }
+        }
+
+        return bookingsByItemId;
     }
 
     private Item getItemOrThrow(long itemId) {
