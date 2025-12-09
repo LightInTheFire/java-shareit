@@ -133,15 +133,18 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private void checkBookingIntersections(BookingDto bookingDto) {
-        List<Booking> bookingsOfItem = bookingRepository.findAllByItem_Id(bookingDto.itemId());
-        LocalDateTime start = bookingDto.start();
-        LocalDateTime end = bookingDto.end();
+        List<Booking> intersections =
+                bookingRepository.findApprovedIntersectingBookings(
+                        bookingDto.itemId(),
+                        bookingDto.start(),
+                        bookingDto.end()
+                );
 
-        for (Booking booking : bookingsOfItem) {
-            if (start.isBefore(booking.getEndTime()) && end.isAfter(booking.getStartTime())) {
-                throw new BookingIntersectionException("""
-                        You can't book this item because booking dates intersects with another booking""");
-            }
+        if (!intersections.isEmpty()) {
+            throw new BookingIntersectionException(
+                    "You can't book this item because booking dates intersect with another booking"
+            );
+
         }
     }
 

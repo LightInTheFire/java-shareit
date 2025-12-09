@@ -13,6 +13,20 @@ import java.util.Optional;
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findAllByItem_IdInAndStatus(Collection<Long> ids, BookingStatus status);
+
+    @Query("""
+                SELECT b FROM Booking b
+                WHERE b.item.id = :itemId
+                  AND b.status = 'APPROVED'
+                  AND :start < b.endTime
+                  AND :end > b.startTime
+            """)
+    List<Booking> findApprovedIntersectingBookings(
+            Long itemId,
+            LocalDateTime start,
+            LocalDateTime end
+    );
+
     //booker methods
 
     Optional<Booking> findByBookerIdAndItemIdAndStatusAndEndTimeIsBefore(
@@ -89,5 +103,4 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             BookingStatus status
     );
 
-    List<Booking> findAllByItem_Id(Long itemId);
 }
