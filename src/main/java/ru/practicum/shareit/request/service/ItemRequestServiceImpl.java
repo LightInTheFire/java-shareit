@@ -1,6 +1,7 @@
 package ru.practicum.shareit.request.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -48,9 +49,11 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         List<Long> requestsIds = requestsOfUser.stream()
                 .map(ItemRequest::getId)
                 .toList();
+
         List<Item> itemResponsesForRequests = itemRepository.findAllByRequest_IdIn(requestsIds);
         Map<Long, List<Item>> itemsByRequestId = itemResponsesForRequests.stream()
                 .collect(Collectors.groupingBy(Item::getId));
+
         return requestsOfUser.stream()
                 .map(itemRequest -> ItemRequestMapper.toItemRequestWithResponseDto(
                         itemRequest,
@@ -61,7 +64,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     @Override
     public Collection<ItemRequestDto> getAll() {
-        List<ItemRequest> requests = requestRepository.findAll();
+        List<ItemRequest> requests =
+                requestRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
         return requests.stream()
                 .map(ItemRequestMapper::toItemRequestDto)
                 .toList();
