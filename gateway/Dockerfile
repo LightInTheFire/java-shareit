@@ -3,15 +3,18 @@ WORKDIR /application
 
 COPY pom.xml ./
 
-ENV MAVEN_OPTS="-Dmaven.repo.local=/app/.m2/repository"
-RUN mvn dependency:go-offline -B
-COPY src ./src
+COPY gateway/pom.xml gateway/pom.xml
+COPY server/pom.xml server/pom.xml
 
-RUN mvn clean package -DskipTests
+ENV MAVEN_OPTS="-Dmaven.repo.local=/app/.m2/repository"
+RUN mvn -pl gateway -am dependency:go-offline -B
+COPY gateway/src ./gateway/src
+
+RUN mvn clean package -pl gateway -am -DskipTests
 
 FROM amazoncorretto:21.0.8-alpine AS layers
 WORKDIR /application
-COPY --from=builder /application/target/*.jar app.jar
+COPY --from=builder /application/gateway/target/*.jar app.jar
 RUN java -Djarmode=tools -jar app.jar extract --layers --destination extracted
 
 FROM amazoncorretto:21.0.8-alpine
