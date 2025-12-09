@@ -4,10 +4,7 @@ import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.dto.BookingInfoDto;
 import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemWithBookingDto;
-import ru.practicum.shareit.item.dto.NewItemDto;
-import ru.practicum.shareit.item.dto.UpdateItemDto;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 
@@ -68,6 +65,12 @@ public class ItemMapper {
                         .map(CommentMapper::toDto)
                         .toList()
         );
+    }
+
+    public static ItemForRequestDto toItemForRequestDto(Item item) {
+        Long itemId = item.getId();
+        String itemName = item.getName();
+        return new ItemForRequestDto(itemId, itemName, item.getOwner().getId());
     }
 
 }
