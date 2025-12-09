@@ -4,7 +4,6 @@ public record ItemDto(
         Long id,
         String name,
         String description,
-        boolean available,
-        Long requestId
+        boolean available
 ) {
 }
