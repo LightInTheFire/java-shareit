@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import ru.practicum.shareit.exception.dto.ErrorResponse;
 import ru.practicum.shareit.exception.dto.ValidationErrorResponse;
@@ -31,6 +32,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpServerErrorException.class)
     public ResponseEntity<Object> onHttpServerErrorException(HttpServerErrorException ex) {
+        log.error(ex.getMessage());
+        return ResponseEntity.status(ex.getStatusCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(ex.getResponseBodyAsByteArray());
+    }
+
+    @ExceptionHandler(HttpClientErrorException.class)
+    public ResponseEntity<Object> onHttpClientErrorException(HttpClientErrorException ex) {
         log.error(ex.getMessage());
         return ResponseEntity.status(ex.getStatusCode())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -64,5 +73,12 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.toList());
         log.warn(violations.toString());
         return new ValidationErrorResponse(violations);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse onIllegalArgumentException(IllegalArgumentException ex) {
+        log.error(ex.getMessage());
+        return new ErrorResponse("illegal argument", ex.getMessage());
     }
 }
