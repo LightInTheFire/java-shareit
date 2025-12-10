@@ -51,9 +51,9 @@ public class ItemController {
 
     @GetMapping("/search")
     public Collection<ItemDto> searchItems(
-            @RequestParam(name = "text") String query
+            @RequestParam(name = "text", required = false) String query
     ) {
-        return itemService.searchItems(query);
+        return itemService.searchItems(query == null ? "" : query);
     }
 
     @PostMapping("/{itemId}/comment")

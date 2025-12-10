@@ -78,7 +78,7 @@ public class ItemController {
 
     @GetMapping("/search")
     public ResponseEntity<Object> searchItems(
-            @RequestParam(name = "text") String query
+            @RequestParam(name = "text", required = false) String query
     ) {
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder
