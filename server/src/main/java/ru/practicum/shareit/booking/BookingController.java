@@ -1,16 +1,13 @@
 package ru.practicum.shareit.booking;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingResponseDto;
 
 import java.util.List;
 
-@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = "/bookings")
@@ -22,7 +19,7 @@ public class BookingController {
     @ResponseStatus(HttpStatus.CREATED)
     public BookingResponseDto createBooking(
             @RequestHeader(SHARER_USER_ID_HEADER) long bookerId,
-            @RequestBody @Valid BookingDto bookingDto
+            @RequestBody BookingDto bookingDto
     ) {
         return bookingService.createBooking(bookerId, bookingDto);
     }
@@ -46,21 +43,18 @@ public class BookingController {
 
     @GetMapping
     public List<BookingResponseDto> getAllBookingsOfUser(
-            @RequestParam(defaultValue = "ALL") String state,
+            @RequestParam BookingState state,
             @RequestHeader(SHARER_USER_ID_HEADER) long userId
     ) {
-        BookingState bookingState = BookingState.fromString(state)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid booking state"));
-        return bookingService.getAllBookingsOfUser(userId, bookingState);
+
+        return bookingService.getAllBookingsOfUser(userId, state);
     }
 
     @GetMapping("/owner")
     public List<BookingResponseDto> getBookingsByOwner(
-            @RequestParam(defaultValue = "ALL") String state,
+            @RequestParam BookingState state,
             @RequestHeader(SHARER_USER_ID_HEADER) long ownerId
     ) {
-        BookingState bookingState = BookingState.fromString(state)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid booking state"));
-        return bookingService.getAllBookingsByOwner(ownerId, bookingState);
+        return bookingService.getAllBookingsByOwner(ownerId, state);
     }
 }

@@ -1,8 +1,7 @@
 package ru.practicum.shareit.request;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.dto.ItemRequestWithResponsesDto;
@@ -11,7 +10,6 @@ import ru.practicum.shareit.request.service.ItemRequestService;
 
 import java.util.Collection;
 
-@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/requests")
@@ -20,9 +18,10 @@ public class ItemRequestController {
     private final ItemRequestService itemRequestService;
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ItemRequestDto createRequest(
             @RequestHeader(SHARER_USER_ID_HEADER) long requestorId,
-            @Valid @RequestBody NewItemRequestDto newItemRequestDto
+            @RequestBody NewItemRequestDto newItemRequestDto
     ) {
         return itemRequestService.create(requestorId, newItemRequestDto);
     }
