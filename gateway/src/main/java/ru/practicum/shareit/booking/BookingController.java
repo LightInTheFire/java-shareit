@@ -24,10 +24,6 @@ public class BookingController {
                 .build();
     }
 
-    public BookingController(RestClient restClient) {
-        this.restClient = restClient;
-    }
-
     @PostMapping
     public ResponseEntity<Object> createBooking(
             @RequestHeader(SHARER_USER_ID_HEADER) long bookerId,
