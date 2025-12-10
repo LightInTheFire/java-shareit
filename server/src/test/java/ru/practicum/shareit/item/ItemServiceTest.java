@@ -22,6 +22,8 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -141,5 +143,70 @@ class ItemServiceTest {
 
         assertThrows(ItemCommentException.class,
                 () -> itemService.createComment(author.getId(), item.getId(), newComment));
+    }
+    @Test
+    @DisplayName("getItemOfUserById - returns item with comments")
+    void getItemOfUserById_ok() {
+        when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
+        when(itemRepository.findById(item.getId())).thenReturn(Optional.of(item));
+        Comment comment = new Comment(1L, "Nice item", item, owner, LocalDateTime.now());
+        when(commentRepository.findAllByItem_IdInOrderByCreatedAtDesc(List.of(item.getId())))
+                .thenReturn(List.of(comment));
+
+        ItemWithBookingDto dto = itemService.getItemOfUserById(owner.getId(), item.getId());
+
+        assertNotNull(dto);
+        assertEquals(item.getId(), dto.id());
+        assertNotNull(dto.comments());
+        assertEquals(1, dto.comments().size());
+        verify(itemRepository).findById(item.getId());
+        verify(commentRepository).findAllByItem_IdInOrderByCreatedAtDesc(List.of(item.getId()));
+    }
+
+    @Test
+    @DisplayName("getItemOfUserById - throws NotFoundException when item not found")
+    void getItemOfUserById_itemNotFound() {
+        when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
+        when(itemRepository.findById(item.getId())).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () ->
+                itemService.getItemOfUserById(owner.getId(), item.getId()));
+    }
+
+    @Test
+    @DisplayName("getAllItemsOfUser - returns items with bookings and comments")
+    void getAllItemsOfUser_ok() {
+        when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
+        when(itemRepository.findAllByOwnerId(owner.getId())).thenReturn(List.of(item));
+
+        Booking booking = new Booking(1L, LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(1),
+                item, owner, BookingStatus.APPROVED);
+        when(bookingRepository.findAllByItem_IdInAndStatus(List.of(item.getId()), BookingStatus.APPROVED))
+                .thenReturn(List.of(booking));
+
+        Comment comment = new Comment(1L, "Great item", item, owner, LocalDateTime.now());
+        when(commentRepository.findAllByItem_IdInOrderByCreatedAtDesc(List.of(item.getId())))
+                .thenReturn(List.of(comment));
+
+        Collection<ItemWithBookingDto> items = itemService.getAllItemsOfUser(owner.getId());
+
+        assertNotNull(items);
+        assertEquals(1, items.size());
+        ItemWithBookingDto dto = items.iterator().next();
+        assertEquals(item.getId(), dto.id());
+        assertNotNull(dto.comments());
+        assertEquals(1, dto.comments().size());
+
+        verify(itemRepository, times(2)).findAllByOwnerId(owner.getId());
+        verify(bookingRepository).findAllByItem_IdInAndStatus(List.of(item.getId()), BookingStatus.APPROVED);
+        verify(commentRepository).findAllByItem_IdInOrderByCreatedAtDesc(List.of(item.getId()));
+    }
+
+    @Test
+    @DisplayName("getAllItemsOfUser - throws NotFoundException when user not found")
+    void getAllItemsOfUser_userNotFound() {
+        when(userRepository.findById(owner.getId())).thenReturn(Optional.empty());
+        assertThrows(NotFoundException.class, () ->
+                itemService.getAllItemsOfUser(owner.getId()));
     }
 }

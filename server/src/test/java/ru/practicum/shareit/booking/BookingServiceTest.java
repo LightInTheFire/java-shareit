@@ -145,4 +145,70 @@ class BookingServiceTest {
         assertThrows(ForbiddenAccessException.class, () ->
                 bookingService.getBookingById(booking.getId(), other.getId()));
     }
+
+    @Test
+    @DisplayName("getAllBookingsOfUser - ALL returns bookings")
+    void getAllBookingsOfUser_all() {
+        when(userRepository.findById(booker.getId())).thenReturn(Optional.of(booker));
+        when(bookingRepository.findByBookerIdOrderByStartTimeDesc(booker.getId()))
+                .thenReturn(List.of(new Booking(1L, bookingDto.start(), bookingDto.end(), item, booker, BookingStatus.WAITING)));
+
+        List<BookingResponseDto> bookings = bookingService.getAllBookingsOfUser(booker.getId(), BookingState.ALL);
+
+        assertEquals(1, bookings.size());
+        verify(bookingRepository).findByBookerIdOrderByStartTimeDesc(booker.getId());
+    }
+
+    @Test
+    @DisplayName("getAllBookingsOfUser - FUTURE returns bookings")
+    void getAllBookingsOfUser_future() {
+        when(userRepository.findById(booker.getId())).thenReturn(Optional.of(booker));
+        when(bookingRepository.findByBookerIdAndStartTimeAfterOrderByStartTimeDesc(eq(booker.getId()), any(LocalDateTime.class)))
+                .thenReturn(List.of(new Booking(2L, bookingDto.start().plusDays(1), bookingDto.end().plusDays(1), item, booker, BookingStatus.WAITING)));
+
+        List<BookingResponseDto> bookings = bookingService.getAllBookingsOfUser(booker.getId(), BookingState.FUTURE);
+
+        assertEquals(1, bookings.size());
+        verify(bookingRepository).findByBookerIdAndStartTimeAfterOrderByStartTimeDesc(eq(booker.getId()), any(LocalDateTime.class));
+    }
+
+    @Test
+    @DisplayName("getAllBookingsByOwner - PAST returns bookings")
+    void getAllBookingsByOwner_past() {
+        when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
+        when(bookingRepository.findByItemOwnerIdAndEndTimeBeforeOrderByStartTimeDesc(eq(owner.getId()), any(LocalDateTime.class)))
+                .thenReturn(List.of(new Booking(3L, bookingDto.start().minusDays(2), bookingDto.end().minusDays(1), item, booker, BookingStatus.APPROVED)));
+
+        List<BookingResponseDto> bookings = bookingService.getAllBookingsByOwner(owner.getId(), BookingState.PAST);
+
+        assertEquals(1, bookings.size());
+        verify(bookingRepository).findByItemOwnerIdAndEndTimeBeforeOrderByStartTimeDesc(eq(owner.getId()), any(LocalDateTime.class));
+    }
+
+    @Test
+    @DisplayName("getAllBookingsByOwner - empty list when no bookings")
+    void getAllBookingsByOwner_empty() {
+        when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
+        when(bookingRepository.findByItemOwnerIdOrderByStartTimeDesc(owner.getId())).thenReturn(List.of());
+
+        List<BookingResponseDto> bookings = bookingService.getAllBookingsByOwner(owner.getId(), BookingState.ALL);
+
+        assertTrue(bookings.isEmpty());
+    }
+
+    @Test
+    @DisplayName("getAllBookingsOfUser - throws NotFoundException if user not found")
+    void getAllBookingsOfUser_userNotFound() {
+        when(userRepository.findById(booker.getId())).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> bookingService.getAllBookingsOfUser(booker.getId(), BookingState.ALL));
+    }
+
+    @Test
+    @DisplayName("getAllBookingsByOwner - throws NotFoundException if user not found")
+    void getAllBookingsByOwner_userNotFound() {
+        when(userRepository.findById(owner.getId())).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () -> bookingService.getAllBookingsByOwner(owner.getId(), BookingState.ALL));
+    }
 }
