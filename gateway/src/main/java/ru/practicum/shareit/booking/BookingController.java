@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking;
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +17,15 @@ public class BookingController {
     private static final String SHARER_USER_ID_HEADER = "X-Sharer-User-Id";
     private final RestClient restClient;
 
+    @Autowired
     public BookingController(@Value("${shareit-server.url}") String baseUrl) {
         this.restClient = RestClient.builder()
                 .baseUrl(baseUrl.concat("/bookings"))
                 .build();
+    }
+
+    public BookingController(RestClient restClient) {
+        this.restClient = restClient;
     }
 
     @PostMapping
