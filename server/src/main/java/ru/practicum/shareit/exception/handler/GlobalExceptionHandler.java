@@ -10,7 +10,7 @@ import ru.practicum.shareit.exception.dto.ErrorResponse;
 
 @Slf4j
 @RestControllerAdvice
-class GlobalExceptionHandler {
+public class GlobalExceptionHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
