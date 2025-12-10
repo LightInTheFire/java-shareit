@@ -7,6 +7,10 @@ import jakarta.validation.metadata.ConstraintDescriptor;
 import org.hibernate.validator.internal.engine.path.PathImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import ru.practicum.shareit.exception.dto.ErrorResponse;
 import ru.practicum.shareit.exception.dto.ValidationErrorResponse;
 import ru.practicum.shareit.exception.dto.Violation;
@@ -14,6 +18,7 @@ import ru.practicum.shareit.exception.handler.GlobalExceptionHandler;
 
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class GlobalExceptionHandlerTest {
@@ -107,5 +112,28 @@ class GlobalExceptionHandlerTest {
 
         assertEquals("internal server error", response.name());
         assertEquals("An error occurred while processing request", response.message());
+    }
+
+    @Test
+    @DisplayName("Handle HttpServerErrorException")
+    void testHttpServerErrorExceptionHandler() {
+        HttpServerErrorException ex =
+                HttpServerErrorException.create(HttpStatusCode.valueOf(500), "Internal Server Error", null, "ErrorBody".getBytes(), null);
+
+        ResponseEntity<Object> response = handler.onHttpServerErrorException(ex);
+
+        assertEquals(500, response.getStatusCodeValue());
+        assertArrayEquals("ErrorBody".getBytes(), (byte[]) response.getBody());
+    }
+
+    @Test
+    @DisplayName("Handle HttpClientErrorException")
+    void testHttpClientErrorExceptionHandler() {
+        HttpClientErrorException ex = HttpClientErrorException.create(HttpStatusCode.valueOf(400), "Bad Request", null, "ClientError".getBytes(), null);
+
+        ResponseEntity<Object> response = handler.onHttpClientErrorException(ex);
+
+        assertEquals(400, response.getStatusCodeValue());
+        assertArrayEquals("ClientError".getBytes(), (byte[]) response.getBody());
     }
 }

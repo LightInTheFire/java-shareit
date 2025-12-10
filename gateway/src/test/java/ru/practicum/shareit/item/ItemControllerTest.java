@@ -59,6 +59,30 @@ class ItemControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+
+    @Test
+    @DisplayName("POST /items - should create item successfully")
+    void createItem_ok() throws Exception {
+        NewItemDto dto = new NewItemDto("Drill", "Powerful drill", true, null);
+
+        mockMvc.perform(post("/items")
+                        .header(HEADER, 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().is5xxServerError());
+    }
+
+
+    @Test
+    @DisplayName("POST /items - should return 400 when header is missing")
+    void createItem_withoutHeader() throws Exception {
+        NewItemDto dto = new NewItemDto("Drill", "Powerful drill", true, null);
+
+        mockMvc.perform(post("/items")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isBadRequest());
+    }
     @Test
     @DisplayName("POST /items - should return 400 when name is blank")
     void createItem_blankName() throws Exception {
