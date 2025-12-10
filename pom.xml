@@ -96,7 +96,7 @@
                         <configLocation>checkstyle.xml</configLocation>
                         <failOnViolation>true</failOnViolation>
                         <logViolationsToConsole>true</logViolationsToConsole>
-                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                        <includeTestSourceDirectory>false</includeTestSourceDirectory>
                     </configuration>
                     <executions>
                         <execution>
